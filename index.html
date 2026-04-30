@@ -1,252 +1,536 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pulse Race Manager PRO</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:Segoe UI,Arial,sans-serif;background:#eef4ff;padding:20px;color:#111827}
-    .wrap{max-width:1200px;margin:auto}
-    .card{background:#fff;border-radius:18px;padding:20px;box-shadow:0 10px 24px rgba(0,0,0,.08);margin-bottom:20px}
-    .grid{display:grid;grid-template-columns:340px 1fr;gap:20px}
-    @media(max-width:900px){.grid{grid-template-columns:1fr}}
-    h1{color:#2563eb;margin-bottom:8px}
-    h2{margin:14px 0}
-    input,select,button{width:100%;padding:12px;margin:6px 0;border:1px solid #d1d5db;border-radius:12px}
-    button{background:#2563eb;color:#fff;border:0;font-weight:700;cursor:pointer}
-    .danger{background:#dc2626}
-    .list{border:1px solid #e5e7eb;border-radius:14px;max-height:520px;overflow:auto}
-    .item{padding:12px;border-bottom:1px solid #eef2f7;cursor:pointer}
-    .item:hover{background:#eff6ff}
-    .hide{display:none}
-    .big{font-size:24px;font-weight:700}
-    .ok{color:#16a34a;font-weight:700}
-    .red{color:#dc2626;font-weight:700}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pulse Race Manager PRO</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:Segoe UI,Arial,sans-serif;
+background:linear-gradient(180deg,#eef4ff,#dbeafe);
+padding:20px;
+color:#111827;
+}
+
+.wrap{
+max-width:1200px;
+margin:auto;
+}
+
+.card{
+background:#ffffff;
+border-radius:18px;
+padding:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+margin-bottom:20px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:340px 1fr;
+gap:20px;
+}
+
+@media(max-width:900px){
+.grid{
+grid-template-columns:1fr;
+}
+}
+
+h1{
+font-size:34px;
+color:#2563eb;
+margin-bottom:8px;
+}
+
+h2{
+margin:14px 0;
+font-size:20px;
+}
+
+input,select,button{
+width:100%;
+padding:12px;
+margin:6px 0;
+border-radius:12px;
+border:1px solid #d1d5db;
+font-size:15px;
+}
+
+button{
+background:#2563eb;
+color:#fff;
+border:0;
+font-weight:700;
+cursor:pointer;
+}
+
+button:hover{
+opacity:.92;
+}
+
+.danger{
+background:#dc2626;
+}
+
+.list{
+border:1px solid #e5e7eb;
+border-radius:14px;
+max-height:520px;
+overflow:auto;
+}
+
+.item{
+padding:12px;
+border-bottom:1px solid #eef2f7;
+cursor:pointer;
+}
+
+.item:hover{
+background:#eff6ff;
+}
+
+.hide{
+display:none;
+}
+
+.big{
+font-size:24px;
+font-weight:700;
+}
+
+.ok{
+color:#16a34a;
+font-weight:700;
+}
+
+.red{
+color:#dc2626;
+font-weight:700;
+}
+
+small{
+color:#6b7280;
+}
+</style>
 </head>
+
 <body>
+
 <div class="wrap">
-  <div class="card">
-    <h1>Pulse Race Manager PRO</h1>
-    <div id="userBox">🔴 Offline</div>
-  </div>
 
-  <div class="card" id="loginBox">
-    <h2>Login</h2>
-    <input id="email" placeholder="Email" value="admin@pulse.com" />
-    <input id="senha" type="password" placeholder="Senha" value="123456" />
-    <button onclick="login()">Entrar</button>
-  </div>
+<div class="card">
+<h1>Pulse Race Manager PRO</h1>
+<small>Sistema profissional de retirada de kits</small>
+<div id="userBox">🔴 Offline</div>
+</div>
 
-  <div id="app" class="hide">
-    <div class="card grid">
-      <div>
-        <h2>Eventos</h2>
-        <select id="eventoSelect"></select>
-        <input id="novoEvento" placeholder="Novo evento" />
-        <button onclick="criarEvento()">Criar Evento</button>
+<!-- LOGIN -->
+<div class="card" id="loginBox">
+<h2>Login</h2>
 
-        <h2>Importar CSV</h2>
-        <input type="file" id="csvFile" accept=".csv" />
-        <button onclick="importCSV()">Importar</button>
+<input id="email" value="admin@pulse.com">
 
-        <h2>Buscar Atleta</h2>
-        <input id="busca" placeholder="Nome / Número / CPF" oninput="buscar()" />
-        <div class="list" id="lista"></div>
-      </div>
+<input id="senha" type="password" value="123456">
 
-      <div>
-        <div class="card">
-          <div class="big">Kits Entregues: <span id="contador">0</span></div>
-        </div>
+<button onclick="login()">Entrar</button>
+</div>
 
-        <div class="card" id="painel">Selecione atleta</div>
+<!-- APP -->
+<div id="app" class="hide">
 
-        <h2>Cadastrar Atleta</h2>
-        <input id="nome" placeholder="Nome" />
-        <input id="numero" placeholder="Número" />
-        <input id="cpf" placeholder="CPF" />
-        <input id="camiseta" placeholder="Camiseta" />
-        <button onclick="addAtleta()">Salvar Atleta</button>
+<div class="card grid">
 
-        <button class="danger" onclick="logout()">Sair</button>
-      </div>
-    </div>
-  </div>
+<!-- LADO ESQUERDO -->
+<div>
+
+<h2>Eventos</h2>
+
+<select id="eventoSelect"></select>
+
+<input id="novoEvento" placeholder="Novo evento">
+
+<button onclick="criarEvento()">Criar Evento</button>
+
+<h2>Importar CSV</h2>
+
+<input type="file" id="csvFile" accept=".csv">
+
+<button onclick="importCSV()">Importar</button>
+
+<h2>Buscar Atleta</h2>
+
+<input
+id="busca"
+placeholder="Nome / Número / CPF"
+oninput="buscar()"
+>
+
+<div class="list" id="lista"></div>
+
+</div>
+
+<!-- LADO DIREITO -->
+<div>
+
+<div class="card">
+<div class="big">
+Kits Entregues:
+<span id="contador">0</span>
+</div>
+</div>
+
+<div class="card" id="painel">
+Selecione atleta
+</div>
+
+<h2>Cadastrar Atleta</h2>
+
+<input id="nome" placeholder="Nome">
+
+<input id="numero" placeholder="Número">
+
+<input id="cpf" placeholder="CPF">
+
+<input id="camiseta" placeholder="Camiseta">
+
+<button onclick="addAtleta()">Salvar Atleta</button>
+
+<button
+class="danger"
+onclick="logout()"
+>
+Sair
+</button>
+
+</div>
+
+</div>
+
+</div>
+
 </div>
 
 <script type="module">
-/* Firebase Imports */
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
-/* Config */
+/* FIREBASE IMPORTS */
+import {
+initializeApp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+import {
+getAuth,
+signInWithEmailAndPassword,
+onAuthStateChanged,
+signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+getDocs,
+doc,
+setDoc,
+updateDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* CONFIG */
 const firebaseConfig = {
-  apiKey: 'SUA_API_KEY',
-  authDomain: 'pulse-race-manager-78a83.firebaseapp.com',
-  projectId: 'pulse-race-manager-78a83',
-  storageBucket: 'pulse-race-manager-78a83.firebasestorage.app',
-  messagingSenderId: '358814635064',
-  appId: '1:358814635064:web:552ba1ce91f6d9f2b642cd'
+apiKey: "AIzaSyDxHwFmXsgMIVbH-MXJZsSkbiujVbfbgz8",
+authDomain: "pulse-race-manager-78a83.firebaseapp.com",
+projectId: "pulse-race-manager-78a83",
+storageBucket: "pulse-race-manager-78a83.firebasestorage.app",
+messagingSenderId: "358814635064",
+appId: "1:358814635064:web:552ba1ce91f6d9f2b642cd",
+measurementId: "G-DJPXY5Y5VD"
 };
 
-/* Init */
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+/* INIT */
+const appFirebase = initializeApp(firebaseConfig);
+const auth = getAuth(appFirebase);
+const db = getFirestore(appFirebase);
+
 const $ = id => document.getElementById(id);
 
-let eventoAtual = '';
+let eventoAtual = "";
 let atletas = [];
 
-/* Auth */
-window.login = async () => {
-  try {
-    await signInWithEmailAndPassword(auth, $('email').value, $('senha').value);
-  } catch (e) {
-    alert(e.message);
-  }
+/* LOGIN */
+window.login = async function(){
+
+try{
+
+await signInWithEmailAndPassword(
+auth,
+$("email").value,
+$("senha").value
+);
+
+}catch(e){
+
+alert(e.message);
+
+}
+
 };
 
-window.logout = () => signOut(auth);
+/* LOGOUT */
+window.logout = function(){
+signOut(auth);
+};
 
-onAuthStateChanged(auth, user => {
-  if (user) {
-    $('loginBox').classList.add('hide');
-    $('app').classList.remove('hide');
-    $('userBox').innerHTML = '🟢 ' + user.email;
-    carregarEventos();
-  } else {
-    $('loginBox').classList.remove('hide');
-    $('app').classList.add('hide');
-    $('userBox').innerHTML = '🔴 Offline';
-  }
+/* STATUS LOGIN */
+onAuthStateChanged(auth,user=>{
+
+if(user){
+
+$("loginBox").classList.add("hide");
+$("app").classList.remove("hide");
+$("userBox").innerHTML = "🟢 " + user.email;
+
+carregarEventos();
+
+}else{
+
+$("loginBox").classList.remove("hide");
+$("app").classList.add("hide");
+$("userBox").innerHTML = "🔴 Offline";
+
+}
+
 });
 
-/* Eventos */
-async function carregarEventos() {
-  const snap = await getDocs(collection(db, 'eventos'));
-  $('eventoSelect').innerHTML = '';
+/* EVENTOS */
+async function carregarEventos(){
 
-  snap.forEach(d => {
-    const op = document.createElement('option');
-    op.value = d.id;
-    op.textContent = d.id;
-    $('eventoSelect').appendChild(op);
-  });
+$("eventoSelect").innerHTML = "";
 
-  if ($('eventoSelect').value) {
-    eventoAtual = $('eventoSelect').value;
-    carregarAtletas();
-  }
+const snap = await getDocs(
+collection(db,"eventos")
+);
 
-  $('eventoSelect').onchange = () => {
-    eventoAtual = $('eventoSelect').value;
-    carregarAtletas();
-  };
+snap.forEach(docu=>{
+
+let op = document.createElement("option");
+
+op.value = docu.id;
+op.textContent = docu.id;
+
+$("eventoSelect").appendChild(op);
+
+});
+
+if($("eventoSelect").value){
+
+eventoAtual = $("eventoSelect").value;
+
+carregarAtletas();
+
 }
 
-window.criarEvento = async () => {
-  const nome = $('novoEvento').value.trim();
-  if (!nome) return;
+$("eventoSelect").onchange = ()=>{
 
-  await setDoc(doc(db, 'eventos', nome), {
-    criado: new Date().toISOString()
-  });
+eventoAtual = $("eventoSelect").value;
 
-  $('novoEvento').value = '';
-  carregarEventos();
+carregarAtletas();
+
 };
 
-/* Atletas */
-window.addAtleta = async () => {
-  if (!eventoAtual) return alert('Crie um evento');
-
-  await addDoc(collection(db, 'eventos', eventoAtual, 'atletas'), {
-    nome: $('nome').value,
-    numero: $('numero').value,
-    cpf: $('cpf').value,
-    camiseta: $('camiseta').value,
-    retirado: false
-  });
-
-  ['nome','numero','cpf','camiseta'].forEach(id => $(id).value='');
-  carregarAtletas();
-};
-
-async function carregarAtletas() {
-  const snap = await getDocs(collection(db, 'eventos', eventoAtual, 'atletas'));
-  atletas = [];
-  snap.forEach(d => atletas.push({ id:d.id, ...d.data() }));
-  renderLista(atletas);
-  $('contador').textContent = atletas.filter(a => a.retirado).length;
 }
 
-function renderLista(lista) {
-  $('lista').innerHTML = '';
-  lista.forEach(a => {
-    const div = document.createElement('div');
-    div.className = 'item';
-    div.innerHTML = `<b>${a.nome}</b><br>Nº ${a.numero}`;
-    div.onclick = () => mostrar(a);
-    $('lista').appendChild(div);
-  });
+/* NOVO EVENTO */
+window.criarEvento = async function(){
+
+let nome = $("novoEvento").value.trim();
+
+if(!nome)return;
+
+await setDoc(
+doc(db,"eventos",nome),
+{
+criado:new Date().toISOString()
+}
+);
+
+$("novoEvento").value = "";
+
+carregarEventos();
+
+};
+
+/* ADD ATLETA */
+window.addAtleta = async function(){
+
+if(!eventoAtual)
+return alert("Crie um evento");
+
+await addDoc(
+collection(db,"eventos",eventoAtual,"atletas"),
+{
+nome:$("nome").value,
+numero:$("numero").value,
+cpf:$("cpf").value,
+camiseta:$("camiseta").value,
+retirado:false
+}
+);
+
+$("nome").value="";
+$("numero").value="";
+$("cpf").value="";
+$("camiseta").value="";
+
+carregarAtletas();
+
+};
+
+/* CARREGAR ATLETAS */
+async function carregarAtletas(){
+
+atletas = [];
+
+const snap = await getDocs(
+collection(db,"eventos",eventoAtual,"atletas")
+);
+
+snap.forEach(docu=>{
+
+atletas.push({
+id:docu.id,
+...docu.data()
+});
+
+});
+
+renderLista(atletas);
+
+$("contador").textContent =
+atletas.filter(x=>x.retirado).length;
+
 }
 
-window.buscar = () => {
-  const t = $('busca').value.toLowerCase();
-  const filtro = atletas.filter(a =>
-    (a.nome||'').toLowerCase().includes(t) ||
-    String(a.numero).includes(t) ||
-    String(a.cpf).includes(t)
-  );
-  renderLista(filtro);
-};
+/* LISTA */
+function renderLista(lista){
 
-function mostrar(a) {
-  $('painel').innerHTML = `
-    <div class='big'>${a.nome}</div>
-    <p>Número: ${a.numero}</p>
-    <p>CPF: ${a.cpf}</p>
-    <p>Camiseta: ${a.camiseta || '-'}</p>
-    <p>Status: ${a.retirado ? '<span class="red">RETIRADO</span>' : '<span class="ok">PENDENTE</span>'}</p>
-    <button onclick="retirar('${a.id}')">Retirar Kit</button>
-  `;
+$("lista").innerHTML="";
+
+lista.forEach(p=>{
+
+let div = document.createElement("div");
+
+div.className="item";
+
+div.innerHTML =
+"<b>"+p.nome+"</b><br>Nº "+p.numero;
+
+div.onclick=()=>mostrar(p);
+
+$("lista").appendChild(div);
+
+});
+
 }
 
-window.retirar = async id => {
-  await updateDoc(doc(db, 'eventos', eventoAtual, 'atletas', id), {
-    retirado: true,
-    data: new Date().toLocaleString()
-  });
-  $('painel').innerHTML = '✅ Kit entregue';
-  carregarAtletas();
+/* BUSCA */
+window.buscar = function(){
+
+let t = $("busca").value.toLowerCase();
+
+let filtro = atletas.filter(x=>
+
+(x.nome||"").toLowerCase().includes(t) ||
+String(x.numero).includes(t) ||
+String(x.cpf).includes(t)
+
+);
+
+renderLista(filtro);
+
 };
 
-/* CSV */
-window.importCSV = async () => {
-  const file = $('csvFile').files[0];
-  if (!file) return alert('Selecione arquivo');
+/* MOSTRAR */
+function mostrar(p){
 
-  const txt = await file.text();
-  const linhas = txt.split(/\r?\n/).filter(Boolean);
+$("painel").innerHTML = `
+<div class="big">${p.nome}</div>
+<p>Número: ${p.numero}</p>
+<p>CPF: ${p.cpf}</p>
+<p>Camiseta: ${p.camiseta || "-"}</p>
+<p>Status:
+${p.retirado
+? '<span class="red">RETIRADO</span>'
+: '<span class="ok">PENDENTE</span>'}
+</p>
 
-  for (let i=1;i<linhas.length;i++) {
-    const c = linhas[i].split(',');
-    await addDoc(collection(db, 'eventos', eventoAtual, 'atletas'), {
-      nome: c[0],
-      numero: c[1],
-      cpf: c[2],
-      camiseta: c[3] || '',
-      retirado: false
-    });
-  }
+<button onclick="retirar('${p.id}')">
+Retirar Kit
+</button>
+`;
 
-  alert('Importado com sucesso');
-  carregarAtletas();
+}
+
+/* RETIRAR */
+window.retirar = async function(id){
+
+await updateDoc(
+doc(db,"eventos",eventoAtual,"atletas",id),
+{
+retirado:true,
+data:new Date().toLocaleString()
+}
+);
+
+$("painel").innerHTML="✅ Kit Entregue";
+
+carregarAtletas();
+
 };
+
+/* IMPORTAR CSV */
+window.importCSV = async function(){
+
+const file = $("csvFile").files[0];
+
+if(!file)
+return alert("Selecione arquivo");
+
+const txt = await file.text();
+
+const linhas =
+txt.split(/\r?\n/).filter(Boolean);
+
+for(let i=1;i<linhas.length;i++){
+
+const c = linhas[i].split(",");
+
+await addDoc(
+collection(db,"eventos",eventoAtual,"atletas"),
+{
+nome:c[0],
+numero:c[1],
+cpf:c[2],
+camiseta:c[3] || "",
+retirado:false
+}
+);
+
+}
+
+alert("Importado com sucesso");
+
+carregarAtletas();
+
+};
+
 </script>
+
 </body>
 </html>
