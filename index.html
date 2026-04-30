@@ -1,136 +1,341 @@
 <!DOCTYPE html>
-<html lang='pt-BR'>
+<html lang="pt-BR">
 <head>
-<meta charset='UTF-8'>
-<meta name='viewport' content='width=device-width,initial-scale=1'>
-<title>Retirada de Kits Pro</title>
-<script src='https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js'></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pulse Race Manager</title>
+
 <style>
-body{font-family:Arial;margin:0;background:#0f172a;color:#e5e7eb}
-.wrap{max-width:1200px;margin:auto;padding:20px}
-.card{background:#111827;border-radius:18px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
-input,button{padding:12px;border-radius:10px;border:0;font-size:16px}
-input{width:100%;margin:8px 0}
-.grid{display:grid;grid-template-columns:1fr 1.3fr;gap:18px}
-.list{max-height:520px;overflow:auto}
-.item{padding:12px;border-bottom:1px solid #1f2937;cursor:pointer}
-.item:hover{background:#1f2937}
-.btn{background:#2563eb;color:#fff;cursor:pointer}
-.danger{background:#dc2626}.ok{background:#16a34a}
-.top{display:flex;justify-content:space-between;gap:10px;align-items:center}
-.big{font-size:28px;font-weight:700}.warn{color:#f87171;font-weight:700}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+font-family:Segoe UI,Arial;
+background:linear-gradient(180deg,#eaf2ff,#dbeafe);
+min-height:100vh;
+color:#111827;
+padding:20px;
+}
+.wrap{max-width:1200px;margin:auto}
+.card{
+background:rgba(255,255,255,.75);
+backdrop-filter:blur(14px);
+border-radius:22px;
+padding:20px;
+box-shadow:0 12px 30px rgba(0,0,0,.08);
+margin-bottom:20px;
+}
+h1{font-size:34px;color:#2563eb}
+h2{margin-bottom:15px}
+input,select,button{
+width:100%;
+padding:13px;
+margin:6px 0;
+border-radius:14px;
+border:1px solid #cbd5e1;
+font-size:15px;
+}
+button{
+background:#2563eb;
+color:#fff;
+border:0;
+cursor:pointer;
+font-weight:600;
+}
+button:hover{opacity:.92}
+.grid{
+display:grid;
+grid-template-columns:320px 1fr;
+gap:20px;
+}
+.list{
+max-height:520px;
+overflow:auto;
+border:1px solid #e5e7eb;
+border-radius:14px;
+}
+.item{
+padding:12px;
+border-bottom:1px solid #eef2f7;
+cursor:pointer;
+}
+.item:hover{background:#eff6ff}
+.big{font-size:26px;font-weight:700}
+.ok{background:#16a34a}
+.red{color:#dc2626;font-weight:700}
+.top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+flex-wrap:wrap;
+}
+small{color:#6b7280}
+.hide{display:none}
 </style>
 </head>
 <body>
-<div class='wrap'>
-<div class='top'>
-<div class='big'>Retirada de Kits</div>
-<div>Kits entregues: <span id='contador'>0</span></div>
+
+<div class="wrap">
+
+<div class="card">
+<div class="top">
+<div>
+<h1>Pulse Race Manager</h1>
+<small>Gestão Profissional de Eventos</small>
 </div>
-<div class='card'>
-<input type='file' id='file'>
-<input id='busca' placeholder='Buscar nome, número ou CPF'>
-</div>
-<div class='grid' style='margin-top:18px'>
-<div class='card list' id='lista'></div>
-<div class='card' id='painel'>Selecione um atleta</div>
-</div>
-<div style='margin-top:18px;display:flex;gap:10px'>
-<button class='btn ok' onclick='exportar()'>Exportar Excel</button>
-<button class='btn' onclick='fullscreenApp()'>Tela Cheia</button>
-<button class='btn danger' onclick='resetar()'>Resetar</button>
+<div id="userBox">Offline</div>
 </div>
 </div>
-<script>
-let data=[];
-let atual=null;
-let audioCtx=null;
-const KEY='kits_backup';
 
-const elContador=document.getElementById('contador');
-const elFile=document.getElementById('file');
-const elBusca=document.getElementById('busca');
-const elLista=document.getElementById('lista');
-const elPainel=document.getElementById('painel');
+<!-- LOGIN -->
+<div class="card" id="loginBox">
+<h2>Entrar</h2>
+<input id="email" value="admin@pulse.com">
+<input id="senha" type="password" value="123456">
+<button onclick="login()">Entrar</button>
+</div>
 
-function save(){localStorage.setItem(KEY,JSON.stringify(data));upd();}
-function upd(){elContador.innerText=data.filter(x=>x.kit_retirado==='SIM').length;}
-function merge(n){const old=JSON.parse(localStorage.getItem(KEY)||'[]');n.forEach(r=>{const a=old.find(x=>x.numero==r.numero);if(a)Object.assign(r,a)});return n;}
+<!-- APP -->
+<div id="app" class="hide">
 
-elFile.addEventListener('change',e=>{
- const fr=new FileReader();
- fr.onload=x=>{
-  const wb=XLSX.read(x.target.result,{type:'array'});
-  const ws=wb.Sheets[wb.SheetNames[0]];
-  data=merge(XLSX.utils.sheet_to_json(ws));
-  save();
-  alert('Planilha carregada');
- };
- fr.readAsArrayBuffer(e.target.files[0]);
-});
+<div class="card">
+<div class="grid">
 
-elBusca.addEventListener('input',()=>{
- const t=elBusca.value.toLowerCase().trim();
- elLista.innerHTML='';
- if(!t)return;
- data.filter(p=>String(p.nome||'').toLowerCase().includes(t)||String(p.numero||'').toLowerCase().includes(t)||String(p.cpf||'').toLowerCase().includes(t))
- .slice(0,100)
- .forEach(p=>{
-   const d=document.createElement('div');
-   d.className='item';
-   d.innerHTML='<b>'+(p.nome||'Sem nome')+'</b><br>Nº '+(p.numero||'');
-   d.addEventListener('click',()=>show(p.numero));
-   elLista.appendChild(d);
- });
-});
+<div>
+<h2>Eventos</h2>
+<select id="eventoSelect"></select>
+<input id="novoEvento" placeholder="Novo evento">
+<button onclick="criarEvento()">Criar Evento</button>
 
-function show(n){
- const p=data.find(x=>x.numero==n);
- if(!p)return;
- atual=p;
- const r=p.kit_retirado==='SIM';
- elPainel.innerHTML=`<div class='big'>${p.nome||''}</div>
- <p>Número: ${p.numero||''}</p>
- <p>CPF: ${p.cpf||''}</p>
- <p>Status: ${r?"<span class='warn'>RETIRADO</span>":'PENDENTE'}</p>
- <button class='btn ok' onclick='retirar(${JSON.stringify(p.numero)})'>Retirar</button>
- <button class='btn danger' onclick='devolver(${JSON.stringify(p.numero)})'>Devolver</button>`;
+<hr style="margin:15px 0">
+
+<h2>Buscar Atleta</h2>
+<input id="busca" placeholder="Nome / Número / CPF" oninput="buscar()">
+
+<div class="list" id="lista"></div>
+</div>
+
+<div>
+<h2>Painel</h2>
+
+<div class="card">
+<div class="big">Kits Entregues: <span id="contador">0</span></div>
+</div>
+
+<div class="card" id="painel">
+Selecione atleta
+</div>
+
+<h2>Cadastrar Atleta</h2>
+<input id="nome" placeholder="Nome">
+<input id="numero" placeholder="Número">
+<input id="cpf" placeholder="CPF">
+<button onclick="addAtleta()">Salvar Atleta</button>
+
+<button style="margin-top:10px;background:#dc2626" onclick="logout()">Sair</button>
+
+</div>
+
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+getAuth,
+signInWithEmailAndPassword,
+onAuthStateChanged,
+signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+getDocs,
+doc,
+updateDoc,
+setDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyDxHwFmXsgMIVbH-MXJZsSkbiujVbfbgz8",
+authDomain: "pulse-race-manager-78a83.firebaseapp.com",
+projectId: "pulse-race-manager-78a83",
+storageBucket: "pulse-race-manager-78a83.firebasestorage.app",
+messagingSenderId: "358814635064",
+appId: "1:358814635064:web:552ba1ce91f6d9f2b642cd"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let eventoAtual = "";
+let atletas = [];
+
+window.login = async function(){
+try{
+await signInWithEmailAndPassword(
+auth,
+email.value,
+senha.value
+);
+}catch(e){
+alert("Erro login");
+}
 }
 
-function retirar(n){const p=data.find(x=>x.numero==n);if(!p)return;beep();p.kit_retirado='SIM';p.data_retirada=new Date().toLocaleString();save();show(n);}
-function devolver(n){const p=data.find(x=>x.numero==n);if(!p)return;p.kit_retirado='';save();show(n);}
-
-function exportar(){const ws=XLSX.utils.json_to_sheet(data);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Kits');XLSX.writeFile(wb,'controle_kits_atualizado.xlsx');}
-function fullscreenApp(){if(document.documentElement.requestFullscreen){document.documentElement.requestFullscreen();}}
-function resetar(){if(confirm('Apagar dados salvos?')){localStorage.removeItem(KEY);location.reload();}}
-
-function beep(){
- try{
-  audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx.state==='suspended'){audioCtx.resume();}
-  const a=audioCtx;
-  const o=a.createOscillator();
-  const g=a.createGain();
-  o.type='square';
-  o.frequency.setValueAtTime(1200,a.currentTime);
-  o.frequency.exponentialRampToValueAtTime(700,a.currentTime+0.12);
-  g.gain.value=0.08;
-  o.connect(g); g.connect(a.destination);
-  o.start(); o.stop(a.currentTime+0.12);
- }catch(e){}
+window.logout = function(){
+signOut(auth);
 }
 
-document.addEventListener('click',function(){
- try{
-  audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx.state==='suspended'){audioCtx.resume();}
- }catch(e){}
-},{once:true});
+onAuthStateChanged(auth,user=>{
+if(user){
+loginBox.classList.add("hide");
+app.classList.remove("hide");
+userBox.innerText = user.email;
+carregarEventos();
+}else{
+loginBox.classList.remove("hide");
+app.classList.add("hide");
+}
+});
 
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&atual)retirar(atual.numero);});
-setInterval(save,30000);
-data=JSON.parse(localStorage.getItem(KEY)||'[]');
-upd();
+async function carregarEventos(){
+eventoSelect.innerHTML="";
+const snap = await getDocs(collection(db,"eventos"));
+
+snap.forEach(d=>{
+let op=document.createElement("option");
+op.value=d.id;
+op.text=d.id;
+eventoSelect.appendChild(op);
+});
+
+if(eventoSelect.value){
+eventoAtual=eventoSelect.value;
+carregarAtletas();
+}
+
+eventoSelect.onchange=()=>{
+eventoAtual=eventoSelect.value;
+carregarAtletas();
+}
+}
+
+window.criarEvento = async function(){
+let nome = novoEvento.value.trim();
+if(!nome)return;
+
+await setDoc(doc(db,"eventos",nome),{
+criado:new Date().toISOString()
+});
+
+novoEvento.value="";
+carregarEventos();
+}
+
+window.addAtleta = async function(){
+if(!eventoAtual)return alert("Crie evento");
+
+await addDoc(
+collection(db,"eventos",eventoAtual,"atletas"),
+{
+nome:nome.value,
+numero:numero.value,
+cpf:cpf.value,
+retirado:false
+}
+);
+
+nome.value="";
+numero.value="";
+cpf.value="";
+carregarAtletas();
+}
+
+async function carregarAtletas(){
+if(!eventoAtual)return;
+
+lista.innerHTML="Carregando...";
+atletas=[];
+
+const snap = await getDocs(
+collection(db,"eventos",eventoAtual,"atletas")
+);
+
+snap.forEach(d=>{
+atletas.push({
+id:d.id,
+...d.data()
+});
+});
+
+renderLista(atletas);
+contador.innerText =
+atletas.filter(x=>x.retirado).length;
+}
+
+function renderLista(arr){
+lista.innerHTML="";
+
+arr.forEach(p=>{
+let div=document.createElement("div");
+div.className="item";
+div.innerHTML=
+"<b>"+p.nome+"</b><br>Nº "+p.numero;
+div.onclick=()=>mostrar(p);
+lista.appendChild(div);
+});
+}
+
+window.buscar = function(){
+let t=busca.value.toLowerCase();
+
+let f=atletas.filter(x=>
+(x.nome||"").toLowerCase().includes(t)||
+String(x.numero).includes(t)||
+String(x.cpf).includes(t)
+);
+
+renderLista(f);
+}
+
+function mostrar(p){
+painel.innerHTML=`
+<div class='big'>${p.nome}</div>
+<p>Número: ${p.numero}</p>
+<p>CPF: ${p.cpf}</p>
+<p>Status:
+${p.retirado
+? "<span class='red'>RETIRADO</span>"
+: "PENDENTE"}
+</p>
+
+<button onclick="retirar('${p.id}')">
+Retirar Kit
+</button>
+`;
+}
+
+window.retirar = async function(id){
+await updateDoc(
+doc(db,"eventos",eventoAtual,"atletas",id),
+{
+retirado:true,
+data:new Date().toLocaleString()
+}
+);
+
+carregarAtletas();
+painel.innerHTML="Kit Entregue";
+}
+
 </script>
 </body>
 </html>
